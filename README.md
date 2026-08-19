@@ -1,3 +1,5 @@
+<img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/e07d5271-56e4-497b-ac06-fd2b26754d2f" />
+
 # iOS Keyboard Viewport
 
 An [Agent Skill](https://agentskills.io/) for diagnosing and fixing mobile-web layout bugs caused by the on-screen keyboard and the Visual Viewport API, especially on iOS Safari.
