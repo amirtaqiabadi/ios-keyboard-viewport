@@ -32,9 +32,12 @@ The agent classifies the symptom, then applies only the matching fix:
 | --- | --- |
 | Wrong available height | Mirror Visual Viewport height |
 | Fixed UI drifting when Safari pans | Anchor an overlay to the Visual Viewport rectangle |
+| Full-screen shell clipped at top, or composer `--vv-top` above the keyboard | Pin the box to `--vv-top`; do not size from layout top with only `--vv-height` |
 | Background bounce | Lock body scroll while the overlay is open |
 | Focused control obscured in an internal scroller | Scroll that scroller after viewport geometry settles |
 | iOS input zoom | Use a computed font size of at least `16px` (do not disable zoom) |
+
+This is an agent instruction package, not a runtime polyfill. Installing it does not modify an application's CSS or component tree. The agent must install the viewport helper once near the app root and then update the actual fixed shell, overlay, and internal scroller that reproduce the bug.
 
 It ships copy-paste helpers:
 
@@ -48,6 +51,7 @@ CSS variables set by the helpers:
 - `--vv-height` — visible viewport height
 - `--vv-top` — visual viewport offset from the layout viewport top
 - `--vv-bottom` — obscured layout-viewport space below the visual viewport
+- `--vv-layout-height` — layout-viewport baseline used to derive `--vv-bottom`
 - `--keyboard-open` — `1` only when a keyboard-sized reduction and a focused editable element are detected
 
 Works with HTML/CSS/JavaScript, React/Next.js, and portal-based libraries such as Radix, shadcn/ui, Headless UI, and MUI.

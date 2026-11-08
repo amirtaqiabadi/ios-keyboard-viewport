@@ -14,14 +14,44 @@ export function ensureFocusedVisible(scroller, element = document.activeElement)
     else if (item.top < topLimit + padding) delta = item.top - topLimit - padding;
     if (delta) scroller.scrollBy({ top: delta, behavior: reduced ? 'auto' : 'smooth' });
   };
-  if (!viewport) return requestAnimationFrame(reveal);
+
+  if (!viewport) {
+    requestAnimationFrame(reveal);
+    return;
+  }
+
+  // iOS often emits several resize/scroll steps while the keyboard animates.
+  // Wait for two stable animation frames, with a hard 600ms bound, instead of
+  // revealing after the first resize (which can immediately become stale).
+  const started = performance.now();
+  const initial = [viewport.height, viewport.offsetTop, viewport.pageTop]
+    .map((value) => Math.round(value)).join(':');
+  let previous = initial;
+  let stableFrames = 0;
   let done = false;
+  let frame = 0;
   const finish = () => {
     if (done) return;
     done = true;
-    viewport.removeEventListener('resize', finish);
+    viewport.removeEventListener('resize', check);
+    viewport.removeEventListener('scroll', check);
+    cancelAnimationFrame(frame);
     requestAnimationFrame(reveal);
   };
-  viewport.addEventListener('resize', finish, { once: true });
-  setTimeout(finish, 350);
+  const check = () => {
+    if (done) return;
+    const signature = [viewport.height, viewport.offsetTop, viewport.pageTop]
+      .map((value) => Math.round(value)).join(':');
+    stableFrames = signature === previous ? stableFrames + 1 : 0;
+    previous = signature;
+    const elapsed = performance.now() - started;
+    if ((elapsed >= 120 && stableFrames >= 2) || elapsed >= 600) {
+      finish();
+      return;
+    }
+    frame = requestAnimationFrame(check);
+  };
+  viewport.addEventListener('resize', check);
+  viewport.addEventListener('scroll', check);
+  frame = requestAnimationFrame(check);
 }
